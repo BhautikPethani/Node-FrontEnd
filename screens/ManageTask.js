@@ -17,12 +17,17 @@ import * as helper from "../services/helper";
 import { Dropdown } from "react-native-element-dropdown";
 
 const ManageTask = ({ route, navigation }) => {
+  const taskStatus = [
+    { label: "Pending", value: "-1" },
+    { label: "Completed", value: "0" },
+  ];
   const { workspace } = route.params;
   var [isSignInAlreadyCheck, setIsSignInAlreadyCheck] = useState(true);
   var [allTasks, setAllTasks] = useState(null);
+  var [currentStatus, setCurrentStatus] = useState("-1");
 
   function getAllTasksToKanbanBoard(workspaceID, status) {
-    // console.log(workspaceID);
+    console.log(workspaceID);
     fetch(helper.networkURL + "getTasks", {
       method: "POST",
       headers: {
@@ -59,7 +64,7 @@ const ManageTask = ({ route, navigation }) => {
     helper.getAsync("user").then((data) => {
       if (data != undefined || data != "") {
         currentUser = data;
-        getAllTasksToKanbanBoard(workspace._id, "-1");
+        getAllTasksToKanbanBoard(workspace._id, currentStatus);
       } else {
         navigation.replace("Login");
       }
@@ -121,6 +126,40 @@ const ManageTask = ({ route, navigation }) => {
       });
   };
 
+  const handleDeleteTask = (task) => {
+    console.log(task._id + task.taskName + task.dependantID);
+    fetch(helper.networkURL + "deleteTask", {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        taskID: task._id,
+        taskName: task.taskName,
+        dependantID: task.dependantID,
+      }),
+    })
+      .then((res) => {
+        // console.log(res.status);
+        if (res.status == 200) {
+          return res.json();
+        } else {
+          helper.alertBox({
+            label: "Opps !",
+            message: "Something Went Wrong !!",
+          });
+        }
+      })
+      .then((response) => {
+        helper.alertBox(response);
+        getAllTasksToKanbanBoard(workspace._id, currentStatus);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
+
   const Item = ({ task }) => {
     return (
       <TouchableOpacity
@@ -143,7 +182,10 @@ const ManageTask = ({ route, navigation }) => {
               {task.endDate}
             </Text>
           </View>
-          <TouchableOpacity style={styles.delete} onPress={() => {}}>
+          <TouchableOpacity
+            style={styles.delete}
+            onPress={() => handleDeleteTask(task)}
+          >
             <MaterialIcons name="delete-forever" size={30} color="white" />
           </TouchableOpacity>
         </View>
@@ -175,6 +217,23 @@ const ManageTask = ({ route, navigation }) => {
         </View>
       </View>
       <View style={[styles.tabContainer, styles.bgWhite]}>
+        <Dropdown
+          style={[styles.dropdown]}
+          placeholderStyle={styles.placeholderStyle}
+          selectedTextStyle={styles.selectedTextStyle}
+          inputSearchStyle={styles.inputSearchStyle}
+          iconStyle={styles.iconStyle}
+          data={taskStatus}
+          maxHeight={300}
+          labelField="label"
+          valueField="value"
+          placeholder={"Pending"}
+          value={currentStatus}
+          onChange={(item) => {
+            getAllTasksToKanbanBoard(workspace._id, item.value);
+            setCurrentStatus(item.value);
+          }}
+        />
         <FlatList
           data={allTasks}
           renderItem={({ item }) => <Item task={item} />}
