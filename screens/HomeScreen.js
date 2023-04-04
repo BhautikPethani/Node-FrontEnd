@@ -84,7 +84,40 @@ const HomeScreen = ({ navigation }) => {
   };
 
   const handleAddNewWorkspace = async () => {
-    navigation.navigate("New Workspace");
+    fetch(helper.networkURL + "getAllUsernames", {
+      method: "GET",
+    })
+      .then((res) => {
+        // console.log(res.status);
+        if (res.status == 200) {
+          return res.json();
+        } else {
+          helper.alertBox({
+            label: "Opps !",
+            message: "Invalid Credentials !!",
+          });
+        }
+      })
+      .then((response) => {
+        // console.log(response[0].userName);
+        var user = [];
+        for (var a in response) {
+          user.push({
+            id: response[a].userName,
+            name: response[a].userName,
+          });
+          // console.log();
+        } // console.log(response);
+        console.log(user);
+        // navigation.navigate("New Workspace");
+        navigation.navigate("New Workspace", { user });
+
+        // setAllWorkspaces(response);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+
     // await signOutCurrentUser()
     //   .then((data) => {
     //     // console.log(data);
@@ -99,7 +132,7 @@ const HomeScreen = ({ navigation }) => {
   const Item = ({ workspace }) => {
     return (
       <TouchableOpacity
-      // onPress={() => navigation.navigate("More Details", item)}
+        onPress={() => navigation.navigate("Manage Task", { workspace })}
       >
         <View style={styles.item}>
           <View style={styles.cardDetails}>

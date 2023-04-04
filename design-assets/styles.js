@@ -29,6 +29,9 @@ export const styles = StyleSheet.create({
   bgWhite: {
     backgroundColor: Colors.whiteColor,
   },
+  bgGrey: {
+    backgroundColor: Colors.greyColor,
+  },
   bgBlack: {
     backgroundColor: Colors.blackColor,
   },
@@ -112,6 +115,7 @@ export const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 20,
     marginHorizontal: 8,
+    marginTop: 15,
   },
   buttonText: {
     color: "#fff",
@@ -120,7 +124,7 @@ export const styles = StyleSheet.create({
   },
   backButtonText: {
     color: "#0197f6",
-    fontSize: 24,
+    fontSize: 28,
     marginHorizontal: 20,
   },
   bold: {

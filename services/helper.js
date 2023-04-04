@@ -1,7 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Alert } from "react-native";
 
-export var networkURL = "http://192.168.2.36:8081/";
+export var networkURL = "http://172.20.10.3:8081/";
 
 export function validateEmail(email) {
   var expression = /^[^@]+@\w+(\.\w+)+\w$/;

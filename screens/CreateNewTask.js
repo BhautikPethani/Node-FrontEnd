@@ -22,15 +22,18 @@ import {
 import { styles } from "../design-assets/styles";
 import * as helper from "../services/helper";
 import { whiteColor } from "../design-assets/colors";
-import { Dropdown } from "react-native-element-dropdown";
 import MultiSelect from "react-native-multiple-select";
+import { Dropdown } from "react-native-element-dropdown";
 
-const CreateNewWorkspace = ({ route, navigation }) => {
-  var { user } = route.params;
-  console.log(user);
+const CreateNewTask = ({ route, navigation }) => {
+  var { workspace, user, dependantTasks } = route.params;
+  //   console.log(dependantTasks);
   var [isSignInAlreadyCheck, setIsSignInAlreadyCheck] = useState(true);
-  const [modalVisible, setModalVisible] = useState(false);
-  const [workspaceName, setWorkspaceName] = useState("");
+  const [taskName, setTaskName] = useState("");
+  const [taskDescription, setTaskDescription] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [dependantID, setDependantID] = useState("-1");
   const [selectedItems, setSelectedItems] = useState([]);
   const [isFocus, setIsFocus] = useState(false);
 
@@ -57,18 +60,23 @@ const CreateNewWorkspace = ({ route, navigation }) => {
     // console.log(selectedItems);
   };
 
-  handleAddWorkspace = () => {
+  handleAddTask = () => {
     helper.getAsync("user").then((data) => {
-      fetch(helper.networkURL + "createWorkspace", {
+      fetch(helper.networkURL + "createTask", {
         method: "POST",
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          workspaceName: workspaceName,
-          owner: data.userName,
+          taskName: taskName,
+          description: taskDescription,
+          startDate: startDate,
+          endDate: endDate,
           participants: selectedItems,
+          dependantID: dependantID,
+          workspaceID: workspace._id,
+          status: -1,
         }),
       })
         .then((res) => {
@@ -84,7 +92,7 @@ const CreateNewWorkspace = ({ route, navigation }) => {
         })
         .then((response) => {
           helper.alertBox(response);
-          navigation.replace("Dashboard");
+          navigation.replace("Manage Task", { workspace });
         })
         .catch((err) => {
           helper.alertBox({
@@ -92,17 +100,6 @@ const CreateNewWorkspace = ({ route, navigation }) => {
             message: "Something went wrong",
           });
         });
-      // setWorkSpace(
-      //   workspaceName,
-      //   helper.generateUsername(data.email),
-      //   selectedItems
-      // )
-      //   .then((success) => {
-      //     return helper.alertBox(success);
-      //   })
-      //   .catch((err) => {
-      //     return helper.alertBox(err);
-      //   });
     });
   };
 
@@ -125,16 +122,36 @@ const CreateNewWorkspace = ({ route, navigation }) => {
               styles.flex2,
             ]}
           >
-            New Project
+            New Task
           </Text>
         </View>
       </View>
       <View style={[styles.tabContainer, styles.bgWhite]}>
         <TextInput
           style={[styles.textInput]}
-          value={workspaceName}
-          onChangeText={setWorkspaceName}
-          placeholder="Enter Workspace Name"
+          value={taskName}
+          onChangeText={setTaskName}
+          placeholder="Enter Task Name"
+        />
+        <TextInput
+          multiline
+          style={[styles.textInput, { height: "15%" }]}
+          value={taskDescription}
+          onChangeText={setTaskDescription}
+          placeholder="Enter task description"
+          numberOfLines={5}
+        />
+        <TextInput
+          style={[styles.textInput]}
+          value={startDate}
+          onChangeText={setStartDate}
+          placeholder="Start Date (MM-DD-YYYY)"
+        />
+        <TextInput
+          style={[styles.textInput]}
+          value={endDate}
+          onChangeText={setEndDate}
+          placeholder="Due Date (MM-DD-YYYY)"
         />
         <MultiSelect
           hideTags
@@ -157,10 +174,39 @@ const CreateNewWorkspace = ({ route, navigation }) => {
           submitButtonColor="#000"
           submitButtonText="Submit"
         />
+        <Dropdown
+          style={[styles.dropdown, isFocus && { borderColor: "black" }]}
+          placeholderStyle={styles.placeholderStyle}
+          selectedTextStyle={styles.selectedTextStyle}
+          inputSearchStyle={styles.inputSearchStyle}
+          iconStyle={styles.iconStyle}
+          data={dependantTasks}
+          search
+          maxHeight={300}
+          labelField="label"
+          valueField="value"
+          placeholder={!isFocus ? "Select dependant Task" : "..."}
+          searchPlaceholder="Search..."
+          value={dependantID}
+          onFocus={() => setIsFocus(true)}
+          onBlur={() => setIsFocus(false)}
+          onChange={(item) => {
+            setDependantID(item.value);
+            setIsFocus(false);
+          }}
+          renderLeftIcon={() => (
+            <AntDesign
+              style={styles.icon}
+              color={isFocus ? "black" : "black"}
+              name="Safety"
+              size={20}
+            />
+          )}
+        />
         <TouchableOpacity
           style={styles.button}
           onPress={
-            () => handleAddWorkspace()
+            () => handleAddTask()
             // navigation.navigate("Step 2", { firstName, lastName, email })
           }
         >
@@ -171,4 +217,4 @@ const CreateNewWorkspace = ({ route, navigation }) => {
   );
 };
 
-export default CreateNewWorkspace;
+export default CreateNewTask;
